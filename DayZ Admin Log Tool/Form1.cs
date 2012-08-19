@@ -45,7 +45,7 @@ namespace DayZ_Admin_Log_Tool
 
             var textRepresentation = "";
 
-            foreach (var playerInfo in data.Values.Where(playerInfo => !string.IsNullOrWhiteSpace(playerInfo.Guid) && !string.IsNullOrWhiteSpace(playerInfo.Id)).OrderBy(playerInfo => playerInfo.UserName))
+            foreach (var playerInfo in data.Values.Where(playerInfo => !string.IsNullOrWhiteSpace(playerInfo.Guid) && !string.IsNullOrWhiteSpace(playerInfo.Id)).OrderBy(playerInfo => playerInfo.LastOccurence))
             {
                 textRepresentation += string.Format("{0}" + Environment.NewLine, playerInfo.Id);
 
