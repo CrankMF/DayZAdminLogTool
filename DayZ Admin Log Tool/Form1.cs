@@ -90,9 +90,9 @@ namespace DayZ_Admin_Log_Tool
 
             var textRepresentation = "";
 
-            foreach (var playerInfo in data.Values.Where(playerInfo => !string.IsNullOrWhiteSpace(playerInfo.Guid) && !string.IsNullOrWhiteSpace(playerInfo.Id)).OrderBy(playerInfo => playerInfo.UserName))
+            foreach (var playerInfo in data.Values.Where(playerInfo => !string.IsNullOrWhiteSpace(playerInfo.Guid) && !string.IsNullOrWhiteSpace(playerInfo.Id)).OrderBy(playerInfo => playerInfo.LastOccurence))
             {
-                textRepresentation += string.Format("{0} {1} {2} {3}" + Environment.NewLine, playerInfo.Id, CommentStringTextBox.Text, playerInfo.UserName, playerInfo.Guid);
+                textRepresentation += string.Format("{0} {1} {2} {3} {4}" + Environment.NewLine, playerInfo.Id, CommentStringTextBox.Text, playerInfo.LastOccurence, playerInfo.UserName, playerInfo.Guid);
 
             }
 

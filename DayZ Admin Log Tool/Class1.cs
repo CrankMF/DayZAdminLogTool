@@ -25,19 +25,21 @@ namespace DayZ_Admin_Log_Tool
             {
                 try
                 {
+                    var occurenceDate = DateTime.Parse(line.Substring(0, 19));
                     var cropped = line.Substring(21, line.Length - 21);
                     var nick = cropped.Substring(0, cropped.IndexOf(" ("));
                     var guid = cropped.Substring(cropped.IndexOf(" - #") - 32, 32);
 
                     if (!dataCollector.Keys.Contains(nick))
                     {
-                        dataCollector.Add(nick, new PlayerInfo { Guid = guid, UserName = nick });
+                        dataCollector.Add(nick, new PlayerInfo { Guid = guid, UserName = nick, LastOccurence = occurenceDate });
                     }
                     else
                     {
                         var playerData = dataCollector[nick];
                         playerData.Guid = guid;
                         dataCollector[nick] = playerData;
+                        playerData.LastOccurence = occurenceDate;
                     }
                 }
                 catch (Exception)
@@ -82,5 +84,6 @@ namespace DayZ_Admin_Log_Tool
         public string UserName { get; set; }
         public string Id { get; set; }
         public string Guid { get; set; }
+        public DateTime LastOccurence { get; set; }
     }
 }
