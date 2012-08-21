@@ -86,4 +86,9 @@ namespace DayZ_Admin_Log_Tool
         public string Guid { get; set; }
         public DateTime LastOccurence { get; set; }
     }
+
+    public enum LogFilesMode
+    {
+        FTP, LocalFiles
+    }
 }
