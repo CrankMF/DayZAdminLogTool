@@ -8,20 +8,21 @@ namespace DayZ_Admin_Log_Tool
     public static class DayZLogFilesParser
     {
         public static Func<string, bool> IdsLineFilter = (line => line.Contains("connected") && line.Contains("id=") && line.Contains("Player") && !line.Contains("disconnected"));
+        public static Func<string, bool> GuidsLineFilter = (line => !line.Contains("BIS_Effects_AirDestruction") && !line.Contains("BIS_Effects_Burn"));
 
-        public static Dictionary<string, PlayerInfo> ParseIdGuidPairs(string remoteExecLog, string serverConsoleLog)
+        public static Dictionary<string, PlayerInfo> ParseIdGuidPairs(string remoteExecLog, string serverConsoleLog, string[] ignoredIds)
         {
             var dataCollector = new Dictionary<string, PlayerInfo>();
 
             CollectIds(dataCollector, serverConsoleLog);
-            CollectGuids(dataCollector, remoteExecLog);
+            CollectGuids(dataCollector, remoteExecLog, ignoredIds);
 
             return dataCollector;
         }
 
-        private static void CollectGuids(Dictionary<string, PlayerInfo> dataCollector, string remoteExecLog)
+        private static void CollectGuids(Dictionary<string, PlayerInfo> dataCollector, string remoteExecLog, string[] whitelist)
         {
-            foreach (var line in remoteExecLog.Split('\n'))
+            foreach (var line in remoteExecLog.Split('\n').Where(GuidsLineFilter))
             {
                 try
                 {
@@ -37,6 +38,10 @@ namespace DayZ_Admin_Log_Tool
                     else
                     {
                         var playerData = dataCollector[nick];
+                        if (whitelist.Contains(playerData.Id))
+                        {
+                            continue;
+                        }
                         playerData.Guid = guid;
                         dataCollector[nick] = playerData;
                         playerData.LastOccurence = occurenceDate;

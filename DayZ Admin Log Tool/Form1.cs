@@ -7,8 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
-using DayZ_Admin_Log_Tool.Properties;
 using System.Net;
+using dayztool.Properties;
 
 namespace DayZ_Admin_Log_Tool
 {
@@ -43,26 +43,15 @@ namespace DayZ_Admin_Log_Tool
 
         private void ParseButton_Click(object sender, EventArgs e)
         {
-            var data = ParseWithFiles();
-            if (data == null)
+            if (ResultOutputTextBox.Enabled)
             {
-                MessageBox.Show("Something is wrong, cannot parse files.");
-                return;
+                ParseWork.RunWorkerAsync();
             }
-            var textRepresentation = "";
-
-            var sorted = data.Values.Where(playerInfo => !string.IsNullOrWhiteSpace(playerInfo.Guid) && !string.IsNullOrWhiteSpace(playerInfo.Id)).OrderBy(playerInfo => playerInfo.LastOccurence);
-            foreach (var playerInfo in sorted)
-            {
-                textRepresentation += string.Format("{0}" + Environment.NewLine, playerInfo.Id);
-
-            }
-
-            DisplayResult(textRepresentation);
         }
 
         private Dictionary<string, PlayerInfo> ParseWithFiles()
         {
+            var ignoredIds = WhiteListTextBox.Text.Split('.').ToArray();
             var remoteExecFilePath = RemoteExecLogFilePathTextBox.Text;
             var serverConsoleFilePath = ServerConsoleLogFilePathTextBox.Text;
 
@@ -95,7 +84,7 @@ namespace DayZ_Admin_Log_Tool
                 return null;
             }
 
-            return DayZLogFilesParser.ParseIdGuidPairs(remoteExecLog, serverConsoleLog);
+            return DayZLogFilesParser.ParseIdGuidPairs(remoteExecLog, serverConsoleLog, ignoredIds);
         }
 
         private bool DownloadFilesFromFtp()
@@ -120,39 +109,18 @@ namespace DayZ_Admin_Log_Tool
 
         private void ParseWithComments_Click(object sender, EventArgs e)
         {
-            var data = ParseWithFiles();
-            if (data == null)
+            if (ResultOutputTextBox.Enabled)
             {
-                MessageBox.Show("Something is wrong, cannot parse files.");
-                return;
+                ParseWithCommentsWork.RunWorkerAsync();
             }
-
-            var textRepresentation = "";
-
-            var sorted = data.Values.Where(playerInfo => !string.IsNullOrWhiteSpace(playerInfo.Guid) && !string.IsNullOrWhiteSpace(playerInfo.Id)).OrderBy(playerInfo => playerInfo.LastOccurence);
-            foreach (var playerInfo in sorted)
-            {
-                textRepresentation += string.Format("{0} {1} {2} {3} {4}" + Environment.NewLine, playerInfo.Id, CommentStringTextBox.Text, playerInfo.LastOccurence, playerInfo.UserName, playerInfo.Guid);
-
-            }
-
-            DisplayResult(textRepresentation);
         }
 
         private void DisplayResult(string textRepresentation)
         {
-            ResultOutputTextBox.Text = textRepresentation;
-            if (!string.IsNullOrEmpty(textRepresentation))
-            {
-                Clipboard.SetText(textRepresentation);
+            ResultOutputTextBox.Invoke(new UpdateTextCallback(this.UpdateText),
+            new object[] { textRepresentation });
 
-                MessageBox.Show("Love, result in clipboard.");
-                SaveSettings();
-            }
-            else
-            {
-                MessageBox.Show("Something is wrong, no output available, or no cheaters in logs. :-D");
-            }
+
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -168,6 +136,8 @@ namespace DayZ_Admin_Log_Tool
 
             FtpRemoteExecLogDirectoryTextBox.Text = Settings.Default.FtpRemoteExecLogFilePath;
             FtpServerConsoleLogDirectoryTextBox.Text = Settings.Default.FtpServerConsoleLogFilePath;
+
+            WhiteListTextBox.Text = Settings.Default.WhiteList;
 
             FtpModeRadio.Select();
             if (Settings.Default.SelectedMode == "LocalFiles")
@@ -189,6 +159,8 @@ namespace DayZ_Admin_Log_Tool
             Settings.Default.RemoteExecLogFilePath = RemoteExecLogFilePathTextBox.Text;
             Settings.Default.ServerConsoleLogFilePath = ServerConsoleLogFilePathTextBox.Text;
             Settings.Default.SavePassword = SavePasswordCheckBox.Checked;
+
+            Settings.Default.WhiteList = WhiteListTextBox.Text;
 
             Settings.Default.Save();
         }
@@ -220,6 +192,75 @@ namespace DayZ_Admin_Log_Tool
             Settings.Default.SelectedMode = "Local";
             Settings.Default.Save();
         }
+
+        private void ParseWork_DoWork(object sender, DoWorkEventArgs e)
+        {
+            var data = ParseWithFiles();
+            if (data == null)
+            {
+                MessageBox.Show("Something is wrong, cannot parse files.");
+                return;
+            }
+            var textRepresentation = "";
+            var whitelist = WhiteListTextBox.Text.Split(',');
+            var sorted = data.Values.Where(playerInfo => !string.IsNullOrWhiteSpace(playerInfo.Guid) && !string.IsNullOrWhiteSpace(playerInfo.Id)).OrderBy(playerInfo => playerInfo.LastOccurence);
+            foreach (var playerInfo in sorted)
+            {
+                if (!whitelist.Contains(playerInfo.Id))
+                {
+                    textRepresentation += string.Format("{0}" + Environment.NewLine, playerInfo.Id);
+                }
+
+            }
+
+            DisplayResult(textRepresentation);
+            
+        }
+
+        private void ParseWithCommentsWork_DoWork(object sender, DoWorkEventArgs e)
+        {
+            var data = ParseWithFiles();
+            if (data == null)
+            {
+                MessageBox.Show("Something is wrong, cannot parse files.");
+                return;
+            }
+
+            var textRepresentation = "";
+            var whitelist = WhiteListTextBox.Text.Split(',');
+            var sorted = data.Values.Where(playerInfo => !string.IsNullOrWhiteSpace(playerInfo.Guid) && !string.IsNullOrWhiteSpace(playerInfo.Id)).OrderBy(playerInfo => playerInfo.LastOccurence);
+            foreach (var playerInfo in sorted)
+            {
+                if (!whitelist.Contains(playerInfo.Id))
+                {
+                    textRepresentation += string.Format("{0} {1} {2} {3} {4}" + Environment.NewLine, playerInfo.Id, CommentStringTextBox.Text, playerInfo.LastOccurence, playerInfo.UserName, playerInfo.Guid);
+                }
+
+            }
+
+            DisplayResult(textRepresentation);
+
+        }
+
+        private void UpdateText(string textRepresentation)
+        {
+            // Set the textbox text.
+            ResultOutputTextBox.Text = textRepresentation;
+
+            if (!string.IsNullOrEmpty(textRepresentation))
+            {
+                Clipboard.SetText(textRepresentation);
+
+                MessageBox.Show("Love, result in clipboard.");
+                SaveSettings();
+            }
+            else
+            {
+                MessageBox.Show("Something is wrong, no output available, or no cheaters in logs. :-D");
+            }
+        }
+
+        public delegate void UpdateTextCallback(string textRepresentation);
 
     }
 }

@@ -52,6 +52,10 @@
             this.FtpHostTextBox = new System.Windows.Forms.TextBox();
             this.FtpServerConsoleLogDirectoryTextBox = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.WhiteListTextBox = new System.Windows.Forms.TextBox();
+            this.ParseWithCommentsWork = new System.ComponentModel.BackgroundWorker();
+            this.ParseWork = new System.ComponentModel.BackgroundWorker();
             this.SuspendLayout();
             // 
             // RemoteExecLogFileButton
@@ -106,11 +110,11 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.ResultOutputTextBox.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.ResultOutputTextBox.Location = new System.Drawing.Point(13, 193);
+            this.ResultOutputTextBox.Location = new System.Drawing.Point(13, 220);
             this.ResultOutputTextBox.Multiline = true;
             this.ResultOutputTextBox.Name = "ResultOutputTextBox";
             this.ResultOutputTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.ResultOutputTextBox.Size = new System.Drawing.Size(1075, 340);
+            this.ResultOutputTextBox.Size = new System.Drawing.Size(1075, 313);
             this.ResultOutputTextBox.TabIndex = 4;
             // 
             // ParseButton
@@ -272,11 +276,39 @@
             this.label6.TabIndex = 21;
             this.label6.Text = "Server console log FTP directory:";
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(14, 194);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(188, 13);
+            this.label7.TabIndex = 23;
+            this.label7.Text = "Whitelisted id\'s (comma separated list):";
+            // 
+            // WhiteListTextBox
+            // 
+            this.WhiteListTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.WhiteListTextBox.Location = new System.Drawing.Point(202, 194);
+            this.WhiteListTextBox.Name = "WhiteListTextBox";
+            this.WhiteListTextBox.Size = new System.Drawing.Size(886, 20);
+            this.WhiteListTextBox.TabIndex = 24;
+            // 
+            // ParseWithCommentsWork
+            // 
+            this.ParseWithCommentsWork.DoWork += new System.ComponentModel.DoWorkEventHandler(this.ParseWithCommentsWork_DoWork);
+            // 
+            // ParseWork
+            // 
+            this.ParseWork.DoWork += new System.ComponentModel.DoWorkEventHandler(this.ParseWork_DoWork);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1100, 592);
+            this.Controls.Add(this.WhiteListTextBox);
+            this.Controls.Add(this.label7);
             this.Controls.Add(this.FtpServerConsoleLogDirectoryTextBox);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -333,6 +365,10 @@
         private System.Windows.Forms.TextBox FtpHostTextBox;
         private System.Windows.Forms.TextBox FtpServerConsoleLogDirectoryTextBox;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.TextBox WhiteListTextBox;
+        private System.ComponentModel.BackgroundWorker ParseWithCommentsWork;
+        private System.ComponentModel.BackgroundWorker ParseWork;
     }
 }
 
